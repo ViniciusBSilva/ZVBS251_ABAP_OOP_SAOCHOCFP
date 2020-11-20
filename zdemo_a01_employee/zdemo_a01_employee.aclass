@@ -1,0 +1,125 @@
+CLASS zdemo_a01_employee DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    EVENTS employee_added_to_list EXPORTING VALUE(ex_employee_name) TYPE string.
+
+    TYPES: BEGIN OF ty_empl_data,
+             id                  TYPE i,
+             name                TYPE string,
+             position            TYPE string,
+             is_further_educated TYPE abap_boolean,
+           END OF ty_empl_data.
+
+    METHODS constructor IMPORTING im_empl_data TYPE ty_empl_data.
+
+    METHODS set_name IMPORTING im_empl_name TYPE string.
+
+    METHODS get_name RETURNING VALUE(re_empl_name) TYPE string.
+
+    METHODS display_employee RETURNING VALUE(re_display) TYPE string.
+
+    METHODS is_further_educated RETURNING VALUE(re_is_further_educated) TYPE abap_boolean.
+
+    METHODS raise_salary IMPORTING im_percent TYPE i.
+
+    METHODS on_employee_added_to_list FOR EVENT employee_added_to_list OF zdemo_a01_employee
+      IMPORTING ex_employee_name sender.
+
+
+    CLASS-METHODS get_no_of_employees RETURNING VALUE(re_no_of_employees) TYPE i.
+
+    CLASS-METHODS class_constructor.
+
+    CLASS-METHODS display_no_of_employees RETURNING VALUE(re_display) TYPE string.
+
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+
+    CLASS-METHODS count_employees.
+
+    DATA g_empl_id TYPE i.
+    DATA g_empl_name TYPE string.
+    DATA g_empl_position TYPE string.
+    DATA g_empl_salary TYPE p LENGTH 4 DECIMALS 2.
+    DATA g_is_further_educated TYPE abap_boolean.
+
+    CLASS-DATA g_no_of_employees TYPE i.
+    CLASS-DATA g_max_no_of_employees TYPE i.
+
+    CONSTANTS co_starting_salary TYPE p LENGTH 4 DECIMALS 2 VALUE '2000.00'.
+
+ENDCLASS.
+
+
+CLASS zdemo_a01_employee IMPLEMENTATION.
+
+  METHOD class_constructor.
+    g_max_no_of_employees = 10.
+  ENDMETHOD.
+
+  METHOD constructor.
+    IF g_no_of_employees < g_max_no_of_employees.
+      g_empl_id = im_empl_data-id.
+      g_empl_name = im_empl_data-name.
+      g_empl_position  = im_empl_data-position.
+      g_is_further_educated = im_empl_data-is_further_educated.
+      g_empl_salary = co_starting_salary.
+      me->count_employees(  ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD get_name.
+    re_empl_name = g_empl_name.
+  ENDMETHOD.
+
+  METHOD set_name.
+    g_empl_name = im_empl_name.
+  ENDMETHOD.
+
+  METHOD count_employees.
+*    ADD 1 TO g_no_of_employees.
+    g_no_of_employees += 1.
+  ENDMETHOD.
+
+  METHOD get_no_of_employees.
+    re_no_of_employees = g_no_of_employees.
+  ENDMETHOD.
+
+  METHOD display_employee.
+
+    re_display = |{ g_empl_id } \r| && |{ g_empl_name } \r| &&
+                 |{ g_empl_position } \r| && |{ g_empl_salary } \r| &&
+                 |{ repeat(  val = '─' occ = 100 ) } \n|.
+
+    RAISE EVENT employee_added_to_list EXPORTING ex_employee_name = g_empl_name.
+
+  ENDMETHOD.
+
+  METHOD display_no_of_employees.
+
+    re_display = |Number of employees: { g_no_of_employees }|.
+
+  ENDMETHOD.
+
+  METHOD is_further_educated.
+    re_is_further_educated = g_is_further_educated.
+  ENDMETHOD.
+
+  METHOD raise_salary.
+
+    me->g_empl_salary += me->g_empl_salary / 100 * im_percent.
+
+  ENDMETHOD.
+
+  METHOD on_employee_added_to_list.
+    IF 1 = 2.
+***    WRITE: |Employee added to list: { ex_employee_name }| .
+    ENDIF.
+  ENDMETHOD.
+
+ENDCLASS.

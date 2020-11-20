@@ -1,0 +1,73 @@
+CLASS zdemo_a01_application DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun.
+
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+
+ENDCLASS.
+
+
+
+CLASS zdemo_a01_application IMPLEMENTATION.
+
+  METHOD if_oo_adt_classrun~main.
+
+    TYPES: BEGIN OF ty_employee,
+             employee TYPE REF TO zdemo_a01_employee,
+           END OF ty_employee.
+    DATA lt_employee TYPE TABLE OF ty_employee.
+    DATA ls_employee TYPE ty_employee.
+
+
+    DATA ls_employee_data TYPE zdemo_a01_employee=>ty_empl_data.
+
+    ls_employee_data-id       = 1.
+    ls_employee_data-name     = 'John Doe'.
+    ls_employee_data-position = 'Sales'.
+    ls_employee_data-is_further_educated = abap_true.
+
+    CLEAR ls_employee.
+    CREATE OBJECT ls_employee-employee
+      EXPORTING
+        im_empl_data = ls_employee_data.
+    APPEND ls_employee TO lt_employee.
+
+    CLEAR ls_employee_data.
+    ls_employee_data-id       = 2.
+    ls_employee_data-name     = 'Sally Summer'.
+    ls_employee_data-position = 'IT'.
+
+    CLEAR ls_employee.
+    CREATE OBJECT ls_employee-employee
+      EXPORTING
+        im_empl_data = ls_employee_data.
+    APPEND ls_employee TO lt_employee.
+
+
+*** Display
+    CLEAR ls_employee.
+    LOOP AT lt_employee INTO ls_employee.
+
+      CHECK NOT ls_employee-employee IS INITIAL.
+
+      SET HANDLER ls_employee-employee->on_employee_added_to_list FOR ls_employee-employee.
+
+      IF ls_employee-employee->is_further_educated( ) = abap_true.
+        ls_employee-employee->raise_salary( 5 ).
+      ENDIF.
+
+      out->write( ls_employee-employee->display_employee( ) ).
+    ENDLOOP.
+
+    out->write( zdemo_a01_employee=>display_no_of_employees(  ) ).
+
+  ENDMETHOD.
+
+ENDCLASS.
